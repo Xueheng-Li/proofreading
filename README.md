@@ -29,7 +29,7 @@ Proofreading long LaTeX manuscripts can be a time-consuming and error-prone task
 
 1. Rename `setting.py.example` to `setting.py`:
     ```sh
-    mv setting.py.example setting.py
+    cp setting.py.example setting.py
     ```
 
 2. Open `setting.py` and set your API key and base URL:
