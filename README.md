@@ -19,6 +19,11 @@ Proofreading long LaTeX manuscripts can be a time-consuming and error-prone task
     ```sh
     pip install -qU langchain-openai
     ```
+3. Clone this repository:
+    ```sh
+    git clone https://github.com/Xueheng-Li/proofreading.git
+    cd proofreading
+    ```
 
 ## Configuration ⚙️
 
