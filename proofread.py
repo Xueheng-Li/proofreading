@@ -101,6 +101,10 @@ def analyze_latex_blocks(content: str, max_length: int = 1000) -> List[str]:
 
 class LaTeXProofreader:
     def __init__(self, model_name: str = "gpt-4o", temperature: float = 0.1):
+        
+        # print model name
+        print(f"Using LLM model: {model_name}")
+        print(f"LLM base url: {BASE_URL}")
         self.llm = ChatOpenAI(
             model_name=model_name,
             temperature=temperature,
@@ -136,15 +140,7 @@ class LaTeXProofreader:
         self.section_text = ""
 
         # Add skip blocks
-        self.skip_blocks = {
-            'figure',
-            'table',
-            'equation',
-            'equation*',
-            'align',
-            'align*',
-            'tabular'
-        }
+        self.skip_blocks = SKIP_BLOCKS
 
         self.progress_file = "proofread_progress.json"
 
@@ -168,30 +164,30 @@ class LaTeXProofreader:
         return False
 
     def should_process_text(self, text: str) -> bool:
-
-        # process if multiple lines; check if text contains multiple lines
-        if len(text.split('\n')) > 1:
-            return True
-
         """Check if text should be processed or returned as-is."""
+
         if not text.strip():
             return False
-            
-        # Skip if text is just a command
-        if self.is_primarily_command(text):
-            return False
-            
+        
+        # Check if text is within a skip block
+        for block in self.skip_blocks:
+            start_name = f"\\begin{{{block}}}"
+            end_name = f"\\end{{{block}}}"
+            if start_name in text and end_name in text:
+                return False
+        
         # Skip if text exactly matches any of the skip patterns
         for pattern in self.skip_commands:
             if re.match(pattern, text.strip()):
                 return False
-
-        # Check if text is within a skip block
-        for block in self.skip_blocks:
-            if text.strip().startswith(f"\\begin{{{block}}}"):
-                print(f"Skipping block: {block}")
-                print(text)
-                return False
+            
+        # process if multiple lines; check if text contains multiple lines
+        if len(text.split('\n')) > 1:
+            return True
+            
+        # Skip if text is just a command
+        if self.is_primarily_command(text):
+            return False
 
         # Skip if text is too short; likely a command or special text
         if len(text.strip()) < 15:
@@ -417,11 +413,10 @@ class LaTeXProofreader:
         """Proofread a single section of the document."""
         # Return text as-is if it shouldn't be processed
         if not self.should_process_text(section_text):
-            print("Skipping LaTeX command or special text:")
+            print("Skipping LaTeX command or special block:")
             print(section_text)
             return section_text
-        # # replace \n with space
-        # content = content.replace('\n', ' ')
+        
         # Store the section text for post-editing
         self.section_text = section_text
         
