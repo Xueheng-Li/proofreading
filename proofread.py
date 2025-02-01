@@ -8,7 +8,7 @@ from pathlib import Path
 
 from setting import *
 
-PROGRESS_FILE = "proofreading_progress.json"
+
 
 # generate a timestamp
 def gen_timestamp():
@@ -145,6 +145,8 @@ class LaTeXProofreader:
             'align*',
             'tabular'
         }
+
+        self.progress_file = "proofread_progress.json"
 
     def is_citation_command(self, text: str) -> bool:
         """Check if text starts with a citation command."""
@@ -380,7 +382,7 @@ class LaTeXProofreader:
         return paragraphs
 
 
-    def post_edit(self, text: str) -> str:
+    def post_edit(self, text: str, sentence_break=False) -> str:
 
         # sometimes LLM returns results enclosed in ```latex ... ``` or ```...```; extract the content using re
         match = re.match(r'```(?:latex)?\n?(.*?)\n?```', text, re.DOTALL)
@@ -400,13 +402,13 @@ class LaTeXProofreader:
         if not ends_with_endproof and text.strip().endswith('\end{proof}'):
             text = text.rstrip('\end{proof}').rstrip()
 
-        if len(text.split('\n')) <= 3:
+        if sentence_break and len(text.split('\n')) <= 3:
             """Post-edit text to put each sentence on a new line."""
             sentences = re.split(r'(?<=[.!?])\s+(?=[A-Za-z])', text)
             return '\n'.join(sentences)
         
-        # strip any ending one or multiple of /n or space from the text
-        text = text.rstrip('\n ')
+        # # strip any ending one or multiple of /n or space from the text
+        # text = text.rstrip('\n ')
         
         return text
 
@@ -468,7 +470,7 @@ class LaTeXProofreader:
 
     def load_progress(self, file_path: str) -> Dict:
         """Load progress from progress file."""
-        progress_path = Path(PROGRESS_FILE)
+        progress_path = Path(self.progress_file)
         if progress_path.exists():
             with open(progress_path, 'r') as f:
                 progress = json.load(f)
@@ -479,7 +481,7 @@ class LaTeXProofreader:
     def save_progress(self, progress: Dict) -> None:
         """Save progress to progress file."""
         progress['timestamp'] = datetime.now().isoformat()
-        with open(PROGRESS_FILE, 'w') as f:
+        with open(self.progress_file, 'w') as f:
             json.dump(progress, f, indent=2)
 
     def append_to_output(self, output_path: str, content: str, first_write: bool = False) -> None:
@@ -493,6 +495,7 @@ class LaTeXProofreader:
 
     def proofread_document(self, file_path: str, output_path: str, resume: bool = True, stream: bool = False) -> None:
         """Proofread entire LaTeX document with progress tracking and resume capability."""
+        self.progress_file = file_path.replace('.tex', '_proofread_progress.json')
         self.current_file = file_path
         try:
             # Delete output file if not resuming and file exists
@@ -556,8 +559,8 @@ class LaTeXProofreader:
             print(f"Proofreading complete. Output saved to {output_path}")
             
             # Clear progress file if completed
-            if os.path.exists(PROGRESS_FILE):
-                os.remove(PROGRESS_FILE)
+            if os.path.exists(self.progress_file):
+                os.remove(self.progress_file)
             
         except Exception as e:
             print(f"Error during proofreading: {str(e)}")
