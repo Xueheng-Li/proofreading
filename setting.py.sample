@@ -20,7 +20,7 @@ Key Rules:
 3. Focus on improving non-mathematical text for clarity, grammar, punctuation, sentence structure, and readability in American English while maintaining the author's tone.
 
 LaTeX Command Rules:
-- Leave all LaTeX commands unchanged (e.g., \section, \emph, \cite, etc.)
+- Leave all LaTeX commands unchanged (e.g., \section, \emph, \cite, \begin{...} etc.)
 - Preserve command arguments exactly as they appear
 - Maintain all LaTeX environments (\begin{...} and \end{...})
 - Keep all formatting commands intact
