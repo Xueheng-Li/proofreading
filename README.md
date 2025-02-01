@@ -29,7 +29,7 @@ Proofreading long LaTeX manuscripts can be a time-consuming and error-prone task
 
 1. Rename `setting.py.example` to `setting.py`:
     ```sh
-    cp setting.py.example setting.py
+    mv setting.py.example setting.py
     ```
 
 2. Open `setting.py` and set your API key and base URL:
@@ -59,10 +59,22 @@ Arguments:
 Basic usage:
 
 ```sh
-python proofread.py --input path/to/your/manuscript.tex --output copy_edited.tex
+python proofread.py --input path/to/your/manuscript.tex --output copy_edited.tex --stream
 ```
 
 This command will proofread `path/to/your/manuscript.tex` and save the results to `copy_edited.tex`, starting from scratch and streaming the model output in real-time.
+
+## How it works 🛠️
+
+The script scans the LaTeX file and segment into small processing units. These units are sent to the language model for suggestions and improvements. The script then merges the corrected text back into the LaTeX structure, ensuring minimal disruption to existing formatting or commands. 📝
+
+More specifically:
+
+1. The script reads each LaTeX file line by line and identifies relevant text segments for proofreading.
+2. The basic processing units are paragraphs, which are separated by empty lines or LaTeX commands.
+3. It checks for special markers (e.g., “% command line) or certain environments (e.g., “\begin{figure}...\end{figure}”) and skips those blocks entirely. The skip blocks can be set in setting.py.
+4. Selected segments are passed to the language model for suggestions and improvements.
+5. The improved segments are merged back into the LaTeX file, preserving formatting, commands, and structure.
 
 ## Logging 📊
 
@@ -120,10 +132,21 @@ python proofread.py --input 输入文件 --output 输出文件 [--no-resume] [--
 基本用法：
 
 ```sh
-python proofread.py --input path/to/your/manuscript.tex --output copy_edited.tex
+python proofread.py --input path/to/your/manuscript.tex --output copy_edited.tex  --stream
 ```
 
 此命令将校对 `path/to/your/manuscript.tex` 并将结果保存到 `copy_edited.tex`，从头开始并实时流式输出模型结果。
+
+## 工作原理 🛠️
+
+脚本会扫描 LaTeX 文件，并将其拆分成小的处理单元发送给语言模型进行改进。然后脚本将改进后的文本合并回 LaTeX 结构，以尽量减少对现有格式或命令的干扰。 📝
+
+更具体地：
+1. 脚本会逐行读取整个 LaTeX 文件并识别需要校对的文本段落。
+2. 基本处理单元是段落，通过空行或 LaTeX 命令分割。
+3. 脚本会跳过带有特定标记（如“% command line”）或特定环境（如“\begin{figure}...\end{figure}”）。用户可在 setting.py 中进行配置。
+4. 选定的段落会被发送给语言模型校对。
+5. 校对过的段落会合并回 LaTeX 文件，保留格式、命令和布局。
 
 ## 日志记录 📊
 
